@@ -105,7 +105,7 @@ blockquote {
   margin: 1em 40px;
 }
 dfn {
-  font-style: italic;
+  font-style: normal;
 }
 hr {
   display: block;
@@ -123,7 +123,7 @@ ins {
 mark {
   background: #ff0;
   color: #000;
-  font-style: italic;
+  font-style: normal;
   font-weight: bold;
 }
 /* Redeclare monospace font family: h5bp.com/j */
@@ -1096,7 +1096,7 @@ pre {
 }
 pre .c {
   color: #999999;
-  font-style: italic;
+  font-style: normal;
 }
 /* Comment */
 pre .err {
@@ -1135,7 +1135,7 @@ pre .p {
 /* Punctuation */
 pre .cm {
   color: #999999;
-  font-style: italic;
+  font-style: normal;
 }
 /* Comment.Multiline */
 pre .cp {
@@ -1145,7 +1145,7 @@ pre .cp {
 /* Comment.Preproc */
 pre .c1 {
   color: #999999;
-  font-style: italic;
+  font-style: normal;
 }
 /* Comment.Single */
 pre .cs {
@@ -1160,7 +1160,7 @@ pre .gd {
 /* Generic.Deleted */
 pre .ge {
   color: #d0d0d0;
-  font-style: italic;
+  font-style: normal;
 }
 /* Generic.Emph */
 pre .gr {
