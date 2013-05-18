@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
  
  <title>leofen's blog</title>
- <link href="http://username.github.io/" rel="self"/>
- <link href="http://username.github.io"/>
- <updated>2013-05-18T18:59:28+08:00</updated>
- <id>http://username.github.io</id>
+ <link href="http://leofen.github.io/" rel="self"/>
+ <link href="http://leofen.github.io"/>
+ <updated>2013-05-18T23:13:52+08:00</updated>
+ <id>http://leofen.github.io</id>
  <author>
    <name>leofen</name>
    <email>onlyinnju@gmail.com</email>
@@ -14,9 +14,9 @@
  
  <entry>
    <title>hello world</title>
-   <link href="http://username.github.io/%E6%B5%8B%E8%AF%95/2013/05/18/hello-world"/>
+   <link href="http://leofen.github.io/%E6%B5%8B%E8%AF%95/2013/05/18/hello-world"/>
    <updated>2013-05-18T00:00:00+08:00</updated>
-   <id>http://username.github.io/%E6%B5%8B%E8%AF%95/2013/05/18/hello-world</id>
+   <id>http://leofen.github.io/%E6%B5%8B%E8%AF%95/2013/05/18/hello-world</id>
    <content type="html">&lt;p&gt;测试一些显示情况&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;p&gt;代码测试&lt;/p&gt;
