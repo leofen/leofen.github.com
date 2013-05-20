@@ -5,10 +5,52 @@
         <description>leofen's blog - leofen</description>
         <link>http://leofen.github.io</link>
         <link>http://leofen.github.io</link>
-        <lastBuildDate>2013-05-18T23:13:52+08:00</lastBuildDate>
-        <pubDate>2013-05-18T23:13:52+08:00</pubDate>
+        <lastBuildDate>2013-05-20T23:10:17+08:00</lastBuildDate>
+        <pubDate>2013-05-20T23:10:17+08:00</pubDate>
         <ttl>1800</ttl>
 
+
+        <item>
+                <title>通过ssh和lftp在虚拟机和主机间传送文件</title>
+                <description>&lt;p&gt;前两天我用虚拟机装了个archlinux，为了训练自己对命令的熟悉度，我决定不装X桌面。&lt;/p&gt;
+
+&lt;p&gt;好吧说实话是没装起来……&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;p&gt;这两天用用感觉还不错，反正没打算用这玩意看电影什么的（还真有人这么干的&lt;a href=&#39;http://www.youtube.com/watch?feature=player_embedded&amp;amp;v=ji0A3kOAc9U#at=274&#39;&gt;视频链接需翻墙&lt;/a&gt;）。但有件事让我觉得很头疼，就是没办法 像另一台ubuntu虚拟机一样往里面复制东西，这有时候还是挺不方便的。&lt;/p&gt;
+
+&lt;p&gt;一开始我想了个什么法子来传文件呢？我想把我的vim配置弄过去，于是我把.vim和.vimrc打包了上传到某个网盘，然后生成下载链接，再用google的短链接服务转成短链接，再回到arch里面用wget把短链接下下来……&lt;/p&gt;
+
+&lt;p&gt;这他娘的简直是麻烦他妈给麻烦开门——麻烦到家了。&lt;/p&gt;
+
+&lt;p&gt;我一会就忍无可忍了，但是上网搜了一下发现几乎所有教程都是围绕vmware-tools这类虚拟机功能或者windows下的一些软件介绍的。无奈去我们学校的linux群问了下，有人表示可以通过openssh和sftp来实现，这个听起来蛮好（diao）的，于是我决定试试。&lt;/p&gt;
+
+&lt;p&gt;arch有个好处在于，它的文档真的是太丰富了，最值得惊喜的是，中文文档竟然也非常完善，所以arch有了问题基本不需要去google什么，直接查wiki就是了。很轻松就找到了openssh的&lt;a href=&#39;https://wiki.archlinux.org/index.php/Secure_Shell_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87&#39;&gt;页面&lt;/a&gt;)，根据上面的信息，通过&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;bash&#39;&gt;&lt;span class=&#39;c&#39;&gt;# pacman -S openssh \\安装openssh&lt;/span&gt;
+&lt;span class=&#39;c&#39;&gt;# systemctl start sshd \\开启server&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;就在虚拟机上开启了ssh的服务端进程了。接下来我们需要在主机端用sftp访问虚拟机，这也相当简单&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;bash&#39;&gt;&lt;span class=&#39;nv&#39;&gt;$ &lt;/span&gt;sftp 虚拟机上的用户名@虚拟机ip //虚拟机ip可通过ifconfig查看
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;然后会叫你输入密码，就是你虚拟机上那个账号对应的密码。输入正确后就登陆到你的虚拟机上了，可以用put上传主机的文件，也可以用get从虚拟机下载文件,bye命令或者ctrl-D退出。前途一片光明，未来不可限量。&lt;/p&gt;
+
+&lt;p&gt;但是我一会就又觉得不爽了，主要是在sftp下和普通的shell下感觉太不一样的，这货甚至不能TAB补全！它甚至连用上键调用刚刚输入过的命令都不行！&lt;/p&gt;
+
+&lt;p&gt;然后我搜了一下看有没有办法让sftp能补全，发现是有&lt;a href=&#39;http://askubuntu.com/questions/14645/is-it-possible-to-get-tab-completion-with-sftp&#39;&gt;结果&lt;/a&gt;的,但是这玩意说实话看起来就来者不善，最要命的是里面有看起来就像段乱码的sed命令，这玩意挂了我可没信心改对它。不过下面一个人的回复引起了我的注意：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Another alternative: use lftp instead, which has superb built in tab completion (but that&amp;#8217;ll be once you start it, not in the shell.) It can talk sftp and many other protocols&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;lftp我早用过，用起来还是挺顺手的，于是我查了下怎么用lftp来登陆。结果发现异常简单：&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;bash&#39;&gt;&lt;span class=&#39;nv&#39;&gt;$ &lt;/span&gt;lftp sftp://用户名@ip
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;然后就和平时用lftp一样了，直接输入命令在虚拟机端执行，用!执行本地命令，TAB补全什么的都有，这就很方便了。&lt;/p&gt;
+
+&lt;p&gt;补：写完再随手搜了一下，发现其实scp就可以搞定了，不用这么脱裤子放屁的=。=&lt;/p&gt;</description>
+                <link>http://leofen.github.io/%E9%9B%95%E8%99%AB%E5%B0%8F%E6%8A%80/2013/05/20/sshlftp</link>
+                <guid>http://leofen.github.io/%E9%9B%95%E8%99%AB%E5%B0%8F%E6%8A%80/2013/05/20/sshlftp</guid>
+                <pubDate>2013-05-20T00:00:00+08:00</pubDate>
+        </item>
 
         <item>
                 <title>hello world</title>
