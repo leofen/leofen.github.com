@@ -4,13 +4,74 @@
  <title>leofen's blog</title>
  <link href="http://leofen.github.io/" rel="self"/>
  <link href="http://leofen.github.io"/>
- <updated>2013-05-24T21:31:25+08:00</updated>
+ <updated>2013-06-01T16:49:55+08:00</updated>
  <id>http://leofen.github.io</id>
  <author>
    <name>leofen</name>
    <email>onlyinnju@gmail.com</email>
  </author>
 
+ 
+ <entry>
+   <title>coolshell上二级指针删除单链表节点的理解</title>
+   <link href="http://leofen.github.io/%E9%9B%95%E8%99%AB%E5%B0%8F%E6%8A%80/2013/06/01/coolshell"/>
+   <updated>2013-06-01T00:00:00+08:00</updated>
+   <id>http://leofen.github.io/%E9%9B%95%E8%99%AB%E5%B0%8F%E6%8A%80/2013/06/01/coolshell</id>
+   <content type="html">&lt;p&gt;今天重新看了一遍coolshell上关于&lt;a href=&#39;http://coolshell.cn/articles/8990.html&#39;&gt;二级指针删除单链表节点&lt;/a&gt;的文章，想起来看这个是因为最近在看linux的hlist实现，里面用到了二级指针，我当时就想到了之前看过的coolshell上的那篇文章。那篇文章其实之前就看过，也算看懂了是怎么回事，但算不上理解，基本当个trick在看，今天又仔细想了想，有了新的想法，写出来分享一下。至于hlist的一些想法，过两天再写。&lt;/p&gt;
+&lt;!--more--&gt;
+&lt;p&gt;二级指针怎么删节点coolshell上写的挺清楚的，我就不赘述了。coolshell上大多数文章都写得挺好我蛮喜欢看的，但其实这篇我觉得不够好，或者说不够深入。它顶多算是介绍了下这种方法，又带着读者跑了遍代码的逻辑，到此为止了。至于为什么会用这种方法，是怎么想到的，哪些场景下可以套用这种思路，就完全没有了，这不得不说是挺可惜的。此外，这篇文章里把这种思路渲染成了一种技巧一种trick，我挺讨厌这样的。因为在我看来，到c语言这个层次了，语言本身不应该有什么奇技淫巧在里面的，任何神乎其技的实现都是有简单清晰的思路在后面支持的，而这篇文章对这段代码的解读显然违背了这点，我现在用我的理解来尝试分析一下。&lt;/p&gt;
+
+&lt;p&gt;先来看一下传统的写法：&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c&#39;&gt;&lt;span class=&#39;lineno&#39;&gt; 1&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;nf&#39;&gt;remove_if&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;remove_fn&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;rm&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 2&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 3&lt;/span&gt;     &lt;span class=&#39;k&#39;&gt;for&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;nb&#39;&gt;NULL&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;!=&lt;/span&gt; &lt;span class=&#39;nb&#39;&gt;NULL&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 4&lt;/span&gt;     &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 5&lt;/span&gt;         &lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;const&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 6&lt;/span&gt;         &lt;span class=&#39;k&#39;&gt;if&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;rm&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;))&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 7&lt;/span&gt;         &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 8&lt;/span&gt;             &lt;span class=&#39;k&#39;&gt;if&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt; 9&lt;/span&gt;                 &lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;next&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;10&lt;/span&gt;             &lt;span class=&#39;k&#39;&gt;else&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;11&lt;/span&gt;                 &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;12&lt;/span&gt;             &lt;span class=&#39;n&#39;&gt;free&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;13&lt;/span&gt;         &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;14&lt;/span&gt;         &lt;span class=&#39;k&#39;&gt;else&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;15&lt;/span&gt;             &lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;16&lt;/span&gt;         &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;17&lt;/span&gt;     &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;18&lt;/span&gt;     &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;19&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;注意到第8行的if语句，实际上就是对是否头结点两种情况的分支处理。从抽象的链表的角度来考虑，头结点需要特殊处理是因为：在单链表中，删除一个节点时需要把它的前一个节点和后一个节点连起来，而头结点不存在前一个节点，所以需要特殊处理。这个逻辑非常清晰，也非常正确，我觉得如果是这么理解c语言里的链表，那这种写法简直是天经地义，那种二重指针的才是脑子被驴踢了才会想出来的。&lt;/p&gt;
+
+&lt;p&gt;而现在我们尝试用一种更low-level的思路去考虑链表。在c语言中，链表节点是什么？链表节点就是一个地址加上别的数据，这个地址指示着下一个节点的位置（其实就是指针啊）。每个节点都有下一个节点的地址，这样整个链表的内容我们就都能获得了。但是这里有个问题，第一个节点怎么办？它没有前一个节点啊？ok没事有地址要访问，没有地址给你个地址去访问，所以我们会有head这个指针，用来指向第一个节点。这样我们的链表中，每个节点都有一个指针指着，而且环环相扣。&lt;/p&gt;
+
+&lt;p&gt;而在删除节点时，发生了什么？如果直接删除一个节点，那我们失去了什么？那个节点的数据，这个不要紧，我们删掉它说明本来就不要数据了，不是问题；下一个节点的位置，这个比较要命，我们的链表断了；上一个节点中存储的下一个节点的地址，这个其实是最严重的问题，因为此时这个地址已经没有意义了，访问会带来不知道什么后果。所以链表节点的删除需要做一些额外的工作，其实就是一句话：&lt;strong&gt;把之前存储当前节点地址的指针的值替换成下一个节点的地址&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;你有没有发现，此时我们没有“上一个节点”这个概念了，存储当前节点地址的指针是在别的节点中还是就是head指针，这无所谓，我们只要关注指针的值就可以了。&lt;/p&gt;
+
+&lt;p&gt;如果还觉得迷糊，可以看下面的图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img alt=&#39;fg_1&#39; src=&#39;/picture/2013_6_1_fg_1.png&#39; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这就是普通单链表的结构，如果我们想删除一个普通节点，那么我们需要把指向下一个节点的指针赋给指向当前节点的指针。&lt;/p&gt;
+
+&lt;p&gt;&lt;img alt=&#39;fg_2&#39; src=&#39;/picture/2013_6_1_fg_2.png&#39; /&gt;&lt;/p&gt;
+
+&lt;p&gt;而删除头结点时，其实没有区别，我们也是把指向下一个节点的指针赋给指向当前节点的指针，只不过这个指针就是head指针，但说到底，它还是个指针。所以没有什么本质区别。&lt;/p&gt;
+
+&lt;p&gt;&lt;img alt=&#39;fg_3&#39; src=&#39;/picture/2013_6_1_fg_3.png&#39; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们再回过头看下传统代码的实现&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c&#39;&gt;&lt;span class=&#39;lineno&#39;&gt;1&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;if&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;2&lt;/span&gt;     &lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;next&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;3&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;else&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;4&lt;/span&gt;     &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;这不就是在改指针的值么？！只是这里是通过node去访问普通节点的指针，而用head这个标识符来访问head指针。既然都是指针何必脱裤子放屁呢，用一个二重指针指向指向当前节点的指针，直接通过它修改指针的值就是了（修改一重指针的值需要用二重指针操作）。&lt;/p&gt;
+
+&lt;p&gt;ok最后总结一下，为什么会想到二重指针操作的写法？因为我们意识到删除操作的本质是指针值的改变，这样用二重指针去操纵指针的值就是很自然的想法。思考一个操作的本质是编程的重要组成部分，它能帮助我们更好地理解代码的逻辑，同时也能避免在外围无用操作上浪费精力，如果你想揍一头牛，去直接揍就是了，不要练什么“隔山打牛”的功夫，免得隔不同山的时候还要变化拳路。&lt;/p&gt;</content>
+ </entry>
  
  <entry>
    <title>超级英雄联盟的吐槽</title>
@@ -113,12 +174,12 @@ Your browser does not support the audio element.
    <content type="html">&lt;p&gt;测试一些显示情况&lt;/p&gt;
 &lt;!--more--&gt;
 &lt;p&gt;代码测试&lt;/p&gt;
-&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c&#39;&gt;&lt;span class=&#39;cp&#39;&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
-&lt;span class=&#39;kt&#39;&gt;int&lt;/span&gt;
-&lt;span class=&#39;nf&#39;&gt;main&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;kt&#39;&gt;void&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;){&lt;/span&gt;
-    &lt;span class=&#39;n&#39;&gt;printf&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;hello&lt;/span&gt;&lt;span class=&#39;se&#39;&gt;\n&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
-    &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;mi&#39;&gt;0&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
-&lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c&#39;&gt;&lt;span class=&#39;lineno&#39;&gt;1&lt;/span&gt; &lt;span class=&#39;cp&#39;&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;2&lt;/span&gt; &lt;span class=&#39;kt&#39;&gt;int&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;3&lt;/span&gt; &lt;span class=&#39;nf&#39;&gt;main&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;kt&#39;&gt;void&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;){&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;4&lt;/span&gt;     &lt;span class=&#39;n&#39;&gt;printf&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;hello&lt;/span&gt;&lt;span class=&#39;se&#39;&gt;\n&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;5&lt;/span&gt;     &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;mi&#39;&gt;0&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;lineno&#39;&gt;6&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;图片测试 &lt;img alt=&#39;githubcat&#39; src=&#39;/picture/githubcat.jpg&#39; title=&#39;章鱼猫&#39; width=&#39;400&#39; /&gt;&lt;/p&gt;
 

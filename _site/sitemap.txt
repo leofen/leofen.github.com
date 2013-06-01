@@ -8,6 +8,7 @@ http://leofen.github.io/rss.xml
 http://leofen.github.io/sitemap.txt
 http://leofen.github.io/tags.html
 
+http://leofen.github.io/%E9%9B%95%E8%99%AB%E5%B0%8F%E6%8A%80/2013/06/01/coolshell
 http://leofen.github.io/%E6%89%AF%E6%B7%A1/2013/05/24/
 http://leofen.github.io/%E9%9B%95%E8%99%AB%E5%B0%8F%E6%8A%80/2013/05/20/sshlftp
 http://leofen.github.io/%E6%B5%8B%E8%AF%95/2013/05/18/hello-world

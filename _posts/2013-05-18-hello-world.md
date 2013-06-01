@@ -12,7 +12,7 @@ tags: [图片]
 
 代码测试
 
-{% highlight c %}
+{% highlight c linenos %}
 #include <stdio.h>
 int
 main(void){
