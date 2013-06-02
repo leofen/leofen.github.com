@@ -4,7 +4,7 @@
  <title>leofen's blog</title>
  <link href="http://leofen.github.io/" rel="self"/>
  <link href="http://leofen.github.io"/>
- <updated>2013-06-02T13:42:17+08:00</updated>
+ <updated>2013-06-02T13:53:13+08:00</updated>
  <id>http://leofen.github.io</id>
  <author>
    <name>leofen</name>
@@ -22,7 +22,7 @@
 &lt;p&gt;二级指针怎么删节点coolshell上写的挺清楚的，我就不赘述了。coolshell上大多数文章都写得挺好我蛮喜欢看的，但其实这篇我觉得不够好，或者说不够深入。它顶多算是介绍了下这种方法，又带着读者跑了遍代码的逻辑，到此为止了。至于为什么会用这种方法，是怎么想到的，哪些场景下可以套用这种思路，就完全没有了，这不得不说是挺可惜的。此外，这篇文章里把这种思路渲染成了一种技巧一种trick，我挺讨厌这样的。因为在我看来，到c语言这个层次了，语言本身不应该有什么奇技淫巧在里面的，任何神乎其技的实现都是有简单清晰的思路在后面支持的，而这篇文章对这段代码的解读显然违背了这点，我现在用我的理解来尝试分析一下。&lt;/p&gt;
 
 &lt;p&gt;先来看一下传统的写法：&lt;/p&gt;
-&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c&#39;&gt;&lt;span class=&#39;lineno&#39;&gt; 1&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;nf&#39;&gt;remove_if&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;remove_fn&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;rm&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c++&#39;&gt;&lt;span class=&#39;lineno&#39;&gt; 1&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;nf&#39;&gt;remove_if&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;remove_fn&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;rm&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
 &lt;span class=&#39;lineno&#39;&gt; 2&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
 &lt;span class=&#39;lineno&#39;&gt; 3&lt;/span&gt;     &lt;span class=&#39;k&#39;&gt;for&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;node&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;nb&#39;&gt;NULL&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;*&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;curr&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;!=&lt;/span&gt; &lt;span class=&#39;nb&#39;&gt;NULL&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
 &lt;span class=&#39;lineno&#39;&gt; 4&lt;/span&gt;     &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
@@ -63,7 +63,7 @@
 &lt;p&gt;&lt;img alt=&#39;fg_3&#39; src=&#39;/picture/2013_6_1_fg_3.png&#39; /&gt;&lt;/p&gt;
 
 &lt;p&gt;我们再回过头看下传统代码的实现&lt;/p&gt;
-&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c&#39;&gt;&lt;span class=&#39;lineno&#39;&gt;1&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;if&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;c++&#39;&gt;&lt;span class=&#39;lineno&#39;&gt;1&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;if&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt;
 &lt;span class=&#39;lineno&#39;&gt;2&lt;/span&gt;     &lt;span class=&#39;n&#39;&gt;prev&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#39;n&#39;&gt;next&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
 &lt;span class=&#39;lineno&#39;&gt;3&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;else&lt;/span&gt;
 &lt;span class=&#39;lineno&#39;&gt;4&lt;/span&gt;     &lt;span class=&#39;n&#39;&gt;head&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;n&#39;&gt;next&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
@@ -142,8 +142,8 @@ Your browser does not support the audio element.
 &lt;p&gt;我一会就忍无可忍了，但是上网搜了一下发现几乎所有教程都是围绕vmware-tools这类虚拟机功能或者windows下的一些软件介绍的。无奈去我们学校的linux群问了下，有人表示可以通过openssh和sftp来实现，这个听起来蛮好（diao）的，于是我决定试试。&lt;/p&gt;
 
 &lt;p&gt;arch有个好处在于，它的文档真的是太丰富了，最值得惊喜的是，中文文档竟然也非常完善，所以arch有了问题基本不需要去google什么，直接查wiki就是了。很轻松就找到了openssh的&lt;a href=&#39;https://wiki.archlinux.org/index.php/Secure_Shell_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87&#39;&gt;页面&lt;/a&gt;)，根据上面的信息，通过&lt;/p&gt;
-&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;bash&#39;&gt;&lt;span class=&#39;c&#39;&gt;# pacman -S openssh \\安装openssh&lt;/span&gt;
-&lt;span class=&#39;c&#39;&gt;# systemctl start sshd \\开启server&lt;/span&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;bash&#39;&gt;&lt;span class=&#39;nv&#39;&gt;$ &lt;/span&gt;pacman -S openssh &lt;span class=&#39;se&#39;&gt;\\&lt;/span&gt;安装openssh
+&lt;span class=&#39;nv&#39;&gt;$ &lt;/span&gt;systemctl start sshd &lt;span class=&#39;se&#39;&gt;\\&lt;/span&gt;开启server
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;就在虚拟机上开启了ssh的服务端进程了。接下来我们需要在主机端用sftp访问虚拟机，这也相当简单&lt;/p&gt;
 &lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;bash&#39;&gt;&lt;span class=&#39;nv&#39;&gt;$ &lt;/span&gt;sftp 虚拟机上的用户名@虚拟机ip //虚拟机ip可通过ifconfig查看

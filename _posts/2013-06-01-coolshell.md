@@ -13,7 +13,7 @@ tags: [c, coolshell, linux, 链表, 图]
 二级指针怎么删节点coolshell上写的挺清楚的，我就不赘述了。coolshell上大多数文章都写得挺好我蛮喜欢看的，但其实这篇我觉得不够好，或者说不够深入。它顶多算是介绍了下这种方法，又带着读者跑了遍代码的逻辑，到此为止了。至于为什么会用这种方法，是怎么想到的，哪些场景下可以套用这种思路，就完全没有了，这不得不说是挺可惜的。此外，这篇文章里把这种思路渲染成了一种技巧一种trick，我挺讨厌这样的。因为在我看来，到c语言这个层次了，语言本身不应该有什么奇技淫巧在里面的，任何神乎其技的实现都是有简单清晰的思路在后面支持的，而这篇文章对这段代码的解读显然违背了这点，我现在用我的理解来尝试分析一下。
 
 先来看一下传统的写法：
-{% highlight c linenos %}
+{% highlight c++ linenos %}
 
 node * remove_if(node * head, remove_fn rm)
 {
@@ -59,7 +59,7 @@ node * remove_if(node * head, remove_fn rm)
 
 我们再回过头看下传统代码的实现
 
-{% highlight c linenos %}
+{% highlight c++ linenos %}
 
 if (prev)
     prev->next = next;
